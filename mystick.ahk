@@ -12,26 +12,37 @@ btn_free := 0
 ;        上    恢复   下？
 ;
 
-L_stick_x := 1
-L_stick_y := 2
-R_stick_x := 4
-R_stick_y := 5
-D_pad_up := 13
-D_pad_down := 14
-D_pad_left := 15
-D_pad_right := 16
-btn_A := 1 
-btn_B := 2
-btn_X := 3
-btn_Y := 4
-btn_L := 5
-btn_R := 6
-btn_LB := 7
-btn_LT := 8
-btn_RB := 9
-btn_RT := 10 
-btn_Lop := 11   ; 左边的操作键
-btn_Rop := 12   ; 右边的操作键
+L_stick_x := 1 ;y 
+L_stick_y := 2 ;y 
+R_stick_x := 3 ;N qe
+R_stick_y := 6 ;N nm
+btn_A := 3	;y k
+btn_B := 2	;y l
+btn_X := 4	;y j
+btn_Y := 1	;Y i
+btn_L := 11	;y v
+btn_R := 12 ; 
+btn_LB := 7	;y r
+btn_LT := 5	;y y
+btn_RB := 8	;y u
+btn_RT := 6 	;y o
+btn_Lop := 9   ;Y c 左边的操作键
+btn_Rop := 10   ;Y b 右边的操作键
+
+;POV Var
+POV_Index = 1
+u := 0 ;上/36000
+ru := 4500
+r := 9000
+rd := 13500
+d := 18000
+ld := 22500
+l := 27000
+lu := 31500
+D_pad_up := False ;pov t
+D_pad_down := False ;pov g
+D_pad_left := False ;pov f
+D_pad_right := False ;pov h
 
 hotkeyLabels := Object()
 hotkeyLabels.Insert("L-Stick Up")
@@ -111,7 +122,27 @@ TrayTip, MyStick, Script Started, 3, 0
 ; stick 摇杆模拟函数
 stickemu(){
 
+Return
+}
 
+stickreset(){
+    global myStick
+    myStick.ResetButtons()
+	; Loop, 8{
+	; 	myStick.SetAxisByIndex(16384,A_Index)
+    ;     MsgBox, Iteration number is %A_Index%.
+    ;     Sleep, 100
+	; }
+    myStick.SetAxisByIndex(16384,1)
+    myStick.SetAxisByIndex(16384,2)
+    myStick.SetAxisByIndex(16384,3)
+    myStick.SetAxisByIndex(16384,4)
+    myStick.SetAxisByIndex(16384,5)
+    myStick.SetAxisByIndex(16384,6)
+    myStick.SetAxisByIndex(16384,7)
+    myStick.SetAxisByIndex(16384,8)
+    myStick.ResetPovs()
+    Return
 }
 
 ; Gives stick input based on stick variables
@@ -221,7 +252,9 @@ return
 ;-------macros
 
 Pause::Suspend
-^!r:: Reload
+;^!r:: Reload
+;^!p:: stickreset()
+^!r:: stickreset()
 SetKeyDelay, 0
 #MaxHotkeysPerInterval 200
 
@@ -236,7 +269,7 @@ SetKeyDelay, 0
 ;           //// STICK ////
 ;---- L-Stick UP ----
 Label1:
-	myStick.SetAxisByIndex(32768,L_stick_y)
+	myStick.SetAxisByIndex(0,L_stick_y)
 	return
 
 Label1_UP:
@@ -354,7 +387,7 @@ Label13_UP:
 ;           //// C-STICK ////  
 ;---- R-T ---- 
 Label14:
-	myStick.SetBtn(0,btn_RT)
+	myStick.SetBtn(1,btn_RT)
 	Return
 
 Label14_UP:
@@ -381,7 +414,7 @@ Label16_UP:
   
 ;---- R-Stick left ---- 
 Label17:
-	myStick.SetAxisByIndex(32768,R_stick_x)
+	myStick.SetAxisByIndex(0,R_stick_x)
 	Return
 
 Label17_UP:
@@ -390,7 +423,7 @@ Label17_UP:
 
 ;---- R-Stick Right ---- 
 Label18:
-	myStick.SetAxisByIndex(0,R_stick_x)
+	myStick.SetAxisByIndex(32768,R_stick_x)
 	Return
 
 Label18_UP:
@@ -418,36 +451,158 @@ Label20_UP:
 
 ;---- DPAD UP ---- 
 Label21:
-	myStick.SetBtn(1,D_pad_up)
+	D_pad_up := True
+	if D_pad_left{
+		myStick.SetContPov(lu,POV_Index)
+	}
+	else if D_pad_right{
+		myStick.SetContPov(ru,POV_Index)
+	}
+    else if D_pad_down{
+        myStick.ResetPovs()
+    }
+	else{
+		myStick.SetContPov(u,POV_Index)
+	}
 	Return
 
 Label21_UP:
-	myStick.SetBtn(0,D_pad_up)
+	D_pad_up := False
+	if D_pad_left{
+		myStick.SetContPov(l,POV_Index)
+	}
+	Else if D_pad_right{
+		myStick.SetContPov(r,POV_Index)
+	}
+    else if D_pad_down{
+        myStick.SetContPov(d,POV_Index)
+    }
+	Else{
+		myStick.ResetPovs()
+	}
+	; myStick.SetBtn(0,D_pad_up)
 	Return
   
 ;---- DPAD DOWN ---- 
 Label22:
-	myStick.SetBtn(1,D_pad_down)
+	D_pad_down := True
+	If D_pad_left{
+		myStick.SetContPov(ld,POV_Index)
+
+	}
+	else if D_pad_right{
+		myStick.SetContPov(rd,POV_Index)
+	}
+    else if D_pad_up{
+        myStick.ResetPovs()
+    }
+	else {
+		myStick.SetContPov(d,POV_Index)
+	}
+	; myStick.SetBtn(1,D_pad_down)
 	Return
 
 Label22_UP:
-	myStick.SetBtn(0,D_pad_down)
+	; myStick.SetBtn(0,D_pad_down)
+	D_pad_down := False
+	If D_pad_left{
+		myStick.SetContPov(l,POV_Index)
+
+	}
+	else if D_pad_right{
+		myStick.SetContPov(r,POV_Index)
+	}
+    else if D_pad_up{
+        myStick.SetContPov(u,POV_Index)
+    }
+	else {		
+        myStick.ResetPovs()
+	}
 	Return  
 ;---- DPAD Left ---- 
 Label23:
-	myStick.SetBtn(1,D_pad_left)
+	; myStick.SetBtn(1,D_pad_left)
+	D_pad_left := True
+	if D_pad_up{
+		myStick.SetContPov(lu,POV_Index)
+	}
+	else if D_pad_down {
+		myStick.SetContPov(ld,POV_Index)
+	}
+    else if D_pad_right{
+        myStick.ResetPovs()
+    }
+	else{
+		myStick.SetContPov(l,POV_Index)
+	}
 	Return
 
 Label23_UP:
-	myStick.SetBtn(0,D_pad_left)
+	; myStick.SetBtn(0,D_pad_left)
+	D_pad_left := False
+	if D_pad_up{
+		myStick.SetContPov(u,POV_Index)
+
+	}
+	else if D_pad_down {
+		myStick.SetContPov(d,POV_Index)
+	}
+    else if D_pad_right{
+        myStick.SetContPov(r,POV_Index)
+    }
+	else{
+		myStick.ResetPovs()
+	}
 	Return  
 ;---- DPAD Right ---- 
 Label24:
-	myStick.SetBtn(1,D_pad_right)
+	; myStick.SetBtn(1,D_pad_right)
+	D_pad_right := True
+	if D_pad_up {
+		myStick.SetContPov(ru,POV_Index)
+
+	}
+	else if D_pad_down{
+		myStick.SetContPov(rd,POV_Index)
+	}
+    else if D_pad_left{
+        myStick.ResetPovs()
+    }
+	else{
+		myStick.SetContPov(r,POV_Index)
+	}
 	Return
 
 Label24_UP:
-	myStick.SetBtn(0,D_pad_right)
+	; myStick.SetBtn(0,D_pad_right)
+	D_pad_right := False
+	if D_pad_up {
+		myStick.SetContPov(u,POV_Index)
+
+	}
+	else if D_pad_down{
+		myStick.SetContPov(d,POV_Index)
+	}
+    else if D_pad_left{
+        myStick.SetContPov(l,POV_Index)
+    }
+	else{
+		myStick.ResetPovs()
+	}
 	Return  
-	
+
+F6::
+    ; MsgBox, Iteration number
+    myStick.SetAxisByIndex(16384,3)
+    myStick.SetAxisByIndex(16384,6)
+    myStick.SetAxisByIndex(16384,7)
+    myStick.SetAxisByIndex(16384,8)
+Return
+F7::
+    ; MsgBox, Iteration number
+    myStick.SetAxisByIndex(1384,3) ; R 的高左低右
+    myStick.SetAxisByIndex(30000,6) ; R 的上下，高上低下 
+    myStick.SetAxisByIndex(12000,7)
+    myStick.SetAxisByIndex(21000,8)
+Return
 ;----------------------------end macros
