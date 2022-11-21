@@ -3,8 +3,9 @@
 #include CvJoyInterface.ahk
 SetBatchLines, -1
 
-; 我的配置文件，全局性的忽略配置文件
 ; 使用类似 Xbox 的键序
+
+; 变量------------------------------------------------------------------------------------------
 ; Stick 控制相关变量
 btn_press := 1
 btn_free := 0
@@ -12,9 +13,10 @@ axis_low := 0
 axis_ori := 16384
 axis_over := 32768
 ; axis 值：0-16384-32768
-;        上    恢复   下？
-;
+;        上   恢复    下
+;        左           右
 
+; 键位的序号
 L_stick_x := 1 ;y 
 L_stick_y := 2 ;y 
 R_stick_x := 3 ;y qe z
@@ -24,13 +26,15 @@ btn_B := 2	;y l
 btn_X := 4	;y j
 btn_Y := 1	;Y i
 btn_L := 11	;y v
-btn_R := 12 ;
-btn_LB := 7	;y r
+btn_R := 12 ;y
+btn_LB := 7	;y r ps的bt是相反的
 btn_LT := 5	;y y
-btn_RB := 8	;y u
+btn_RB := 8	;y u ps的bt是相反的
 btn_RT := 6 	;y o
 btn_Lop := 9   ;Y c 左边的操作键
 btn_Rop := 10   ;Y b 右边的操作键
+; debug 找出特色按键
+btn_gui := 14
 
 ;POV Var
 POV_Index = 1
@@ -72,13 +76,26 @@ hotkeyLabels.Insert("D-pad Up")
 hotkeyLabels.Insert("D-pad Down")
 hotkeyLabels.Insert("D-pad Left")
 hotkeyLabels.Insert("D-pad Right")
+hotkeyLabels.Insert("Guide")  ; 西瓜键或者ps板
 
+; l-stick 变量
+L_stick_up := False
+L_stick_down := False
+L_stick_left := False
+L_stick_right := False
+
+R_stick_up := False
+R_stick_down := False
+R_stick_left := False
+R_stick_right := False
+
+; 函数------------------------------------------------------------------------------------------
 Menu, Tray, Click, 1
 ;Menu, Tray, NoStandard
 Menu, Tray, Add, Edit Controls, ShowGui
 Menu, Tray, Default, Edit Controls
 
-#ctrls = 24  ;Total number of Key's we will be binding (excluding UP's)?
+#ctrls = 25  ;Total number of Key's we will be binding (excluding UP's)?
 
 for index, element in hotkeyLabels{
  Gui, Add, Text, xm vLB%index%, %element% Hotkey:
@@ -122,31 +139,30 @@ TrayTip, MyStick, Script Started, 3, 0
 
 
 
-; stick 摇杆模拟函数
+; stick 摇杆量模拟函数
 stickemu(){
 
 Return
 }
 
+; 复位
 stickreset(){
     global myStick
-    myStick.ResetButtons()
-	; Loop, 8{
-	; 	myStick.SetAxisByIndex(axis_ori,A_Index)
-    ;     MsgBox, Iteration number is %A_Index%.
-    ;     Sleep, 100
-	; }
-    myStick.SetAxisByIndex(axis_ori,1)
-    myStick.SetAxisByIndex(axis_ori,2)
-    myStick.SetAxisByIndex(axis_ori,3)
-    myStick.SetAxisByIndex(axis_ori,4)
-    myStick.SetAxisByIndex(axis_ori,5)
-    myStick.SetAxisByIndex(axis_ori,6)
-    myStick.SetAxisByIndex(axis_ori,7)
-    myStick.SetAxisByIndex(axis_ori,8)
-    myStick.ResetPovs()
+    Loop, 24 {
+		myStick.SetBtn(0, A_Index)
+	}
+    ; myStick.SetAxisByIndex(axis_ori,1)
+    ; myStick.SetAxisByIndex(axis_ori,2)
+    ; myStick.SetAxisByIndex(axis_ori,3)
+    ; myStick.SetAxisByIndex(axis_ori,4)
+    ; myStick.SetAxisByIndex(axis_ori,5)
+    ; myStick.SetAxisByIndex(axis_ori,6)
+    ; myStick.SetAxisByIndex(axis_ori,7)
+    ; myStick.SetAxisByIndex(axis_ori,8)
+    ; myStick.ResetPovs()
     Return
 }
+
 
 ; Gives stick input based on stick variables
 ; {x:0x30, y:0x31, z:0x32, rx:0x33, ry:0x34, rz: 0x35, sl1:0x36, sl2:0x37} ; Name (eg "x", "y", "z", "sl1") to HID Descriptor
@@ -235,7 +251,7 @@ HotkeyCtrlHasFocus() {
 }
 
 
-;----------------------------Labels
+; GUI------------------------------------------------------------------------------------------
 
 ;Show GUI from tray Icon
 ShowGui:
@@ -255,9 +271,18 @@ return
 ;-------macros
 
 Pause::Suspend
-;^!r:: Reload
-;^!p:: stickreset()
-^!r:: stickreset()
+F7::Suspend
+^!r:: 
+	stickreset()
+    myStick.SetAxisByIndex(axis_ori,1)
+    myStick.SetAxisByIndex(axis_ori,2)
+    myStick.SetAxisByIndex(axis_ori,3)
+    myStick.SetAxisByIndex(axis_ori,4)
+    myStick.SetAxisByIndex(axis_ori,5)
+    myStick.SetAxisByIndex(axis_ori,6)
+    myStick.SetAxisByIndex(axis_ori,7)
+    myStick.SetAxisByIndex(axis_ori,8)
+Return
 SetKeyDelay, 0
 #MaxHotkeysPerInterval 200
 
@@ -270,41 +295,406 @@ SetKeyDelay, 0
   Return
   
 ;           //// STICK ////
+; 按键------------------------------------------------------------------------------------------
 ;---- L-Stick UP ----
 Label1:
-	myStick.SetAxisByIndex(axis_low,L_stick_y)
-	return
+	L_stick_up := True
+	if (L_stick_down and L_stick_left and L_stick_right){
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if (L_stick_left and L_stick_down){
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if (L_stick_left and L_stick_right){
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+	}
+	else if (L_stick_down and L_stick_right){
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if L_stick_down{
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if L_stick_left{
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+	}
+	else if L_stick_right{
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+	}
+	else {
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+	}
+return
 
 Label1_UP:
-	myStick.SetAxisByIndex(axis_ori,L_stick_y)
-	return
+	L_stick_up := False
+	if (L_stick_down and L_stick_left and L_stick_right ){
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, L_stick_x)
+	}
+	else if (L_stick_left and L_stick_down){
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+	}
+	else if (L_stick_left and L_stick_right){
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if (L_stick_down and L_stick_right){
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+	}
+	else if L_stick_down{
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, L_stick_x)
+	}
+	else if L_stick_left{
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if L_stick_right{
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else {
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+return
   
 ;---- L-Stick Downn ----
 Label2:
-	myStick.SetAxisByIndex(axis_over,L_stick_y)
-	return
+	L_stick_down := True
+	if (L_stick_up and L_stick_left and L_stick_right){
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if (L_stick_left and L_stick_up){
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if (L_stick_left and L_stick_right){
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, L_stick_x)
+	}
+	else if (L_stick_up and L_stick_right){
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if L_stick_up{
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if L_stick_left{
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+	}
+	else if L_stick_right{
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+	}
+	else {
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+	}
+return
 
 Label2_UP:
-	myStick.SetAxisByIndex(axis_ori,L_stick_y)
-	return
+	L_stick_down := False
+	if (L_stick_up and L_stick_left and L_stick_right ){
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+	}
+	else if (L_stick_left and L_stick_up){
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+	}
+	else if (L_stick_left and L_stick_right){
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if (L_stick_up and L_stick_right){
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+	}
+	else if L_stick_up{
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+	}
+	else if L_stick_left{
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if L_stick_right{
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else {
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+return
 
 ;---- L-Stick left ----
 Label3:
-	myStick.SetAxisByIndex(axis_low,L_stick_x)
-	return
+	L_stick_left := True
+	if (L_stick_down and L_stick_up and L_stick_right){
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if (L_stick_right and L_stick_down){
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+	}
+	else if (L_stick_up and L_stick_right){
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+	}
+	else if (L_stick_down and L_stick_up){
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if L_stick_down{
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+	}
+	else if L_stick_up{
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+	}
+	else if L_stick_right{
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else {
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+return
 	
 Label3_UP:
-	myStick.SetAxisByIndex(axis_ori,L_stick_x)
-	return
+	L_stick_left := False
+	if (L_stick_down and L_stick_up and L_stick_right ){
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if (L_stick_right and L_stick_down){
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+	}
+	else if (L_stick_up and L_stick_down){
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if (L_stick_up and L_stick_right){
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+	}
+	else if L_stick_down{
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+	}
+	else if L_stick_up{
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+	}
+	else if L_stick_right{
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else{
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+return
   
 ;---- L-Stick RIGHT ----
 Label4:
-	myStick.SetAxisByIndex(axis_over,L_stick_x)
-	return
+	L_stick_right := True
+	if (L_stick_down and L_stick_left and L_stick_up){
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if (L_stick_left and L_stick_down){
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+	}
+	else if (L_stick_left and L_stick_up){
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+	}
+	else if (L_stick_down and L_stick_up){
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if L_stick_down{
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+	}
+	else if L_stick_left{
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if L_stick_up{
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+	}
+	else {
+		;right
+		myStick.SetAxisByIndex(axis_over,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+return
 
 Label4_UP:
-	myStick.SetAxisByIndex(axis_ori,L_stick_x)
-	return  
+	L_stick_right := False
+	if (L_stick_down and L_stick_left and L_stick_up ){
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if (L_stick_left and L_stick_down){
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+	}
+	else if (L_stick_left and L_stick_up){
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+	}
+	else if (L_stick_down and L_stick_up){
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if L_stick_down{
+		;down
+		myStick.SetAxisByIndex(axis_over,L_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+	}
+	else if L_stick_left{
+		; left
+		myStick.SetAxisByIndex(axis_low,L_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+	else if L_stick_up{
+		;up;up
+		myStick.SetAxisByIndex(axis_low,L_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+	}
+	else {
+		; none
+		myStick.SetAxisByIndex(axis_ori,L_stick_x)
+		myStick.SetAxisByIndex(axis_ori,L_stick_y)
+	}
+return  
 
 ;---- L-Stick ----
 Label5:
@@ -399,39 +789,403 @@ Label14_UP:
   
 ;---- R-Stick UP ---- 
 Label15:
-	myStick.SetAxisByIndex(axis_low,R_stick_y)
-	Return
+	R_stick_up := True
+	if (R_stick_down and R_stick_left and R_stick_right){
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if (R_stick_left and R_stick_down){
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if (R_stick_left and R_stick_right){
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, R_stick_x)
+	}
+	else if (R_stick_down and R_stick_right){
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if R_stick_down{
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if R_stick_left{
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+	}
+	else if R_stick_right{
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+	}
+	else {
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+	}
+return
 
 Label15_UP:
-	myStick.SetAxisByIndex(axis_ori,R_stick_y)
-	Return
+	R_stick_up := False
+	if (R_stick_down and R_stick_left and R_stick_right ){
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, R_stick_x)
+	}
+	else if (R_stick_left and R_stick_down){
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+	}
+	else if (R_stick_left and R_stick_right){
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if (R_stick_down and R_stick_right){
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+	}
+	else if R_stick_down{
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, R_stick_x)
+	}
+	else if R_stick_left{
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if R_stick_right{
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else {
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+return
 
 ;---- R-Stick Down ---- 
 Label16:
-	myStick.SetAxisByIndex(axis_over,R_stick_y)
-	Return
+	R_stick_down := True
+	if (R_stick_up and R_stick_left and R_stick_right){
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if (R_stick_left and R_stick_up){
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if (R_stick_left and R_stick_right){
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, R_stick_x)
+	}
+	else if (R_stick_up and R_stick_right){
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if R_stick_up{
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if R_stick_left{
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+	}
+	else if R_stick_right{
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+	}
+	else {
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+	}
+return
   
 Label16_UP:
-	myStick.SetAxisByIndex(axis_ori,R_stick_y)
-	Return
+	R_stick_down := False
+	if (R_stick_up and R_stick_left and R_stick_right ){
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, R_stick_x)
+	}
+	else if (R_stick_left and R_stick_up){
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+	}
+	else if (R_stick_left and R_stick_right){
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if (R_stick_up and R_stick_right){
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+	}
+	else if R_stick_up{
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, R_stick_x)
+	}
+	else if R_stick_left{
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if R_stick_right{
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else {
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+return
   
 ;---- R-Stick left ---- 
 Label17:
-	myStick.SetAxisByIndex(axis_low,R_stick_x)
-	Return
+	R_stick_left := True
+	if (R_stick_down and R_stick_up and R_stick_right){
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if (R_stick_right and R_stick_down){
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, R_stick_x)
+	}
+	else if (R_stick_up and R_stick_right){
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, R_stick_x)
+	}
+	else if (R_stick_down and R_stick_up){
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if R_stick_down{
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+	}
+	else if R_stick_up{
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+	}
+	else if R_stick_right{
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else {
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+return
 
 Label17_UP:
-	myStick.SetAxisByIndex(axis_ori,R_stick_x)
-	Return
+	R_stick_left := False
+	if (R_stick_down and R_stick_up and R_stick_right ){
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if (R_stick_right and R_stick_down){
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+	}
+	else if (R_stick_up and R_stick_down){
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if (R_stick_up and R_stick_right){
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+	}
+	else if R_stick_down{
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, R_stick_x)
+	}
+	else if R_stick_up{
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, R_stick_x)
+	}
+	else if R_stick_right{
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else{
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+return
 
 ;---- R-Stick Right ---- 
 Label18:
-	myStick.SetAxisByIndex(axis_over,R_stick_x)
-	Return
+	R_stick_right := True
+	if (R_stick_down and R_stick_left and R_stick_up){
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if (R_stick_left and R_stick_down){
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, R_stick_x)
+	}
+	else if (R_stick_left and R_stick_up){
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, R_stick_x)
+	}
+	else if (R_stick_down and R_stick_up){
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if R_stick_down{
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+	}
+	else if R_stick_left{
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if R_stick_up{
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+	}
+	else {
+		;right
+		myStick.SetAxisByIndex(axis_over,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+return
 
 Label18_UP:
-	myStick.SetAxisByIndex(axis_ori,R_stick_x)
-	Return
+	R_stick_right := False
+	if (R_stick_down and R_stick_left and R_stick_up ){
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if (R_stick_left and R_stick_down){
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+	}
+	else if (R_stick_left and R_stick_up){
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+	}
+	else if (R_stick_down and R_stick_up){
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if R_stick_down{
+		;down
+		myStick.SetAxisByIndex(axis_over,R_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, R_stick_x)
+	}
+	else if R_stick_left{
+		; left
+		myStick.SetAxisByIndex(axis_low,R_stick_x)
+		;nono up down
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+	else if R_stick_up{
+		;up;up
+		myStick.SetAxisByIndex(axis_low,R_stick_y)
+		;none r l
+		myStick.SetAxisByIndex(axis_ori, R_stick_x)
+	}
+	else {
+		; none
+		myStick.SetAxisByIndex(axis_ori,R_stick_x)
+		myStick.SetAxisByIndex(axis_ori,R_stick_y)
+	}
+return  
   
 ;           //// OTHER BUTTONS ////  
 ;---- Start ---- 
@@ -491,7 +1245,6 @@ Label22:
 	D_pad_down := True
 	If D_pad_left{
 		myStick.SetContPov(ld,POV_Index)
-
 	}
 	else if D_pad_right{
 		myStick.SetContPov(rd,POV_Index)
@@ -510,7 +1263,6 @@ Label22_UP:
 	D_pad_down := False
 	If D_pad_left{
 		myStick.SetContPov(l,POV_Index)
-
 	}
 	else if D_pad_right{
 		myStick.SetContPov(r,POV_Index)
@@ -593,19 +1345,25 @@ Label24_UP:
 		myStick.ResetPovs()
 	}
 	Return  
+;---- Guide ----
+Label25:
+	myStick.SetBtn(btn_press,btn_gui)
+	Return
+
+Label25_UP:
+	myStick.SetBtn(btn_free,btn_gui)
+	Return  
+
 
 F6::
     ; MsgBox, Iteration number
+    myStick.SetAxisByIndex(axis_ori,1)
+    myStick.SetAxisByIndex(axis_ori,2)
     myStick.SetAxisByIndex(axis_ori,3)
+    myStick.SetAxisByIndex(axis_ori,4)
+    myStick.SetAxisByIndex(axis_ori,5)
     myStick.SetAxisByIndex(axis_ori,6)
     myStick.SetAxisByIndex(axis_ori,7)
     myStick.SetAxisByIndex(axis_ori,8)
 Return
-; F7::
-;     ; MsgBox, Iteration number
-;     myStick.SetAxisByIndex(1384,3) ; R 的高左低右
-;     myStick.SetAxisByIndex(30000,6) ; R 的上下，高上低下 
-;     myStick.SetAxisByIndex(12000,7)
-;     myStick.SetAxisByIndex(21000,8)
-; Return
-;----------------------------end macros
+

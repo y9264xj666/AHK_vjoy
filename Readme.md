@@ -29,7 +29,7 @@
 - 需要安装[vjoy](https://github.com/njz3/vJoy)
   
 # 使用
-1. 去[Releases](https://github.com/y9264xj666/AHK_vjoy/releases)下载编译后的包体
+1. 去[Releases](https://github.com/y9264xj666/AHK_vjoy/releases)下载编译后的包体,国内连接：[蓝奏]()|[123pan]()
 2. 解压到任意目录（最好不要有中文）
 3. 打开vjoy的“configure vjoy”，设置为24键，1pov，勾选enable feedback
    ![config](./img/vjoyconfig.png)
@@ -42,6 +42,8 @@
 ## 说明
 1. Ctrl + Alt + R 或者 F6 键可以重置vjoy手柄为0状态
 2. 二次开发请clone本项目并安装AHK进行本地编辑编译
+3. 可以玩原神，不过需要改键位，会有ps的包的，并且需要管理员权限，不然输入不到原神
+4. 游戏内按Pause功能键或者F7键，挂起脚本，可以打字
 
 # 相关项目
 + vjoy 驱动[njz3/vjoy](https://github.com/njz3/vJoy)

@@ -5,3 +5,5 @@ build/
 *.zip
 *.7z
 *.rar
+test*
+*4.ahk
