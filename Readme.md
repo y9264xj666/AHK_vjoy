@@ -39,6 +39,9 @@
 6. 软件可以正常使用了，可以用vjoy的“monitor vjoy”查看按键情况
 7. 打开游戏开玩
 
+## 说明
+1. Ctrl + Alt + R 或者 F6 键可以重置vjoy手柄为0状态
+
 # 相关项目
 + vjoy 驱动[njz3/vjoy](https://github.com/njz3/vJoy)
 + 另一个作者的B0XX游戏控制AHK脚本[FuranHoshi/B0XX-vJoy](https://github.com/FuranHoshi/B0XX-vJoy)，实现了20xx的vjoy版，并且带按键宏

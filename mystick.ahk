@@ -8,20 +8,23 @@ SetBatchLines, -1
 ; Stick 控制相关变量
 btn_press := 1
 btn_free := 0
+axis_low := 0
+axis_ori := 16384
+axis_over := 32768
 ; axis 值：0-16384-32768
 ;        上    恢复   下？
 ;
 
 L_stick_x := 1 ;y 
 L_stick_y := 2 ;y 
-R_stick_x := 3 ;N qe
-R_stick_y := 6 ;N nm
+R_stick_x := 3 ;y qe z
+R_stick_y := 6 ;y nm rz
 btn_A := 3	;y k
 btn_B := 2	;y l
 btn_X := 4	;y j
 btn_Y := 1	;Y i
 btn_L := 11	;y v
-btn_R := 12 ; 
+btn_R := 12 ;
 btn_LB := 7	;y r
 btn_LT := 5	;y y
 btn_RB := 8	;y u
@@ -129,18 +132,18 @@ stickreset(){
     global myStick
     myStick.ResetButtons()
 	; Loop, 8{
-	; 	myStick.SetAxisByIndex(16384,A_Index)
+	; 	myStick.SetAxisByIndex(axis_ori,A_Index)
     ;     MsgBox, Iteration number is %A_Index%.
     ;     Sleep, 100
 	; }
-    myStick.SetAxisByIndex(16384,1)
-    myStick.SetAxisByIndex(16384,2)
-    myStick.SetAxisByIndex(16384,3)
-    myStick.SetAxisByIndex(16384,4)
-    myStick.SetAxisByIndex(16384,5)
-    myStick.SetAxisByIndex(16384,6)
-    myStick.SetAxisByIndex(16384,7)
-    myStick.SetAxisByIndex(16384,8)
+    myStick.SetAxisByIndex(axis_ori,1)
+    myStick.SetAxisByIndex(axis_ori,2)
+    myStick.SetAxisByIndex(axis_ori,3)
+    myStick.SetAxisByIndex(axis_ori,4)
+    myStick.SetAxisByIndex(axis_ori,5)
+    myStick.SetAxisByIndex(axis_ori,6)
+    myStick.SetAxisByIndex(axis_ori,7)
+    myStick.SetAxisByIndex(axis_ori,8)
     myStick.ResetPovs()
     Return
 }
@@ -269,184 +272,184 @@ SetKeyDelay, 0
 ;           //// STICK ////
 ;---- L-Stick UP ----
 Label1:
-	myStick.SetAxisByIndex(0,L_stick_y)
+	myStick.SetAxisByIndex(axis_low,L_stick_y)
 	return
 
 Label1_UP:
-	myStick.SetAxisByIndex(16384,L_stick_y)
+	myStick.SetAxisByIndex(axis_ori,L_stick_y)
 	return
   
 ;---- L-Stick Downn ----
 Label2:
-	myStick.SetAxisByIndex(32768,L_stick_y)
+	myStick.SetAxisByIndex(axis_over,L_stick_y)
 	return
 
 Label2_UP:
-	myStick.SetAxisByIndex(16384,L_stick_y)
+	myStick.SetAxisByIndex(axis_ori,L_stick_y)
 	return
 
 ;---- L-Stick left ----
 Label3:
-	myStick.SetAxisByIndex(0,L_stick_x)
+	myStick.SetAxisByIndex(axis_low,L_stick_x)
 	return
 	
 Label3_UP:
-	myStick.SetAxisByIndex(16384,L_stick_x)
+	myStick.SetAxisByIndex(axis_ori,L_stick_x)
 	return
   
 ;---- L-Stick RIGHT ----
 Label4:
-	myStick.SetAxisByIndex(32768,L_stick_x)
+	myStick.SetAxisByIndex(axis_over,L_stick_x)
 	return
 
 Label4_UP:
-	myStick.SetAxisByIndex(16384,L_stick_x)
+	myStick.SetAxisByIndex(axis_ori,L_stick_x)
 	return  
 
 ;---- L-Stick ----
 Label5:
-	myStick.SetBtn(1,btn_L)
+	myStick.SetBtn(btn_press,btn_L)
 	return
 
 Label5_UP:
-	myStick.SetBtn(0,btn_L)
+	myStick.SetBtn(btn_free,btn_L)
 	return
 
 ;---- R-Stick ----  
 Label6:
-	myStick.SetBtn(0,btn_R)
+	myStick.SetBtn(btn_press,btn_R)
 	return
 Label6_UP:
-	myStick.SetBtn(0,btn_R)
+	myStick.SetBtn(btn_free,btn_R)
 	return  
 
 ;           //// BUTTONS ////
 ;---- Y ---- 
 Label7:
-	myStick.SetBtn(1,btn_Y)
+	myStick.SetBtn(btn_press,btn_Y)
 	Return
 
 Label7_UP:
-	myStick.SetBtn(0,btn_Y)
+	myStick.SetBtn(btn_free,btn_Y)
 	Return
 
 ;---- B ---- 
 Label8:
-	myStick.SetBtn(1,btn_B)
+	myStick.SetBtn(btn_press,btn_B)
 	Return
 
 Label8_UP:
-	myStick.SetBtn(0,btn_B)
+	myStick.SetBtn(btn_free,btn_B)
 	Return
 
 ;---- A ---- 
 Label9:
-	myStick.SetBtn(1,btn_A)
+	myStick.SetBtn(btn_press,btn_A)
 	Return
 
 Label9_UP:
-	myStick.SetBtn(0,btn_A)
+	myStick.SetBtn(btn_free,btn_A)
 	Return
 
 ;---- X ---- 
 Label10:
-	myStick.SetBtn(1,btn_X)
+	myStick.SetBtn(btn_press,btn_X)
 	Return
 
 Label10_UP:
-	myStick.SetBtn(0,btn_X)
+	myStick.SetBtn(btn_free,btn_X)
 	Return
 
 ;---- L-B ---- 
 Label11:
-	myStick.SetBtn(1,btn_LB)
+	myStick.SetBtn(btn_press,btn_LB)
 	Return
 
 Label11_UP:
-	myStick.SetBtn(0,btn_LB)
+	myStick.SetBtn(btn_free,btn_LB)
 	Return
 
 ;---- L-T ---- 
 Label12:
-	myStick.SetBtn(1,btn_LT)
+	myStick.SetBtn(btn_press,btn_LT)
 	Return
 
 Label12_UP:
-	myStick.SetBtn(0,btn_LT)
+	myStick.SetBtn(btn_free,btn_LT)
 	Return
 
 ;---- R-B ---- 
 Label13:
-	myStick.SetBtn(1,btn_RB)
+	myStick.SetBtn(btn_press,btn_RB)
 	Return
 
 Label13_UP:
-	myStick.SetBtn(0,btn_RB)
+	myStick.SetBtn(btn_free,btn_RB)
 	Return
   
 ;           //// C-STICK ////  
 ;---- R-T ---- 
 Label14:
-	myStick.SetBtn(1,btn_RT)
+	myStick.SetBtn(btn_press,btn_RT)
 	Return
 
 Label14_UP:
-	myStick.SetBtn(0,btn_RT)
+	myStick.SetBtn(btn_free,btn_RT)
 	Return
   
 ;---- R-Stick UP ---- 
 Label15:
-	myStick.SetAxisByIndex(0,R_stick_y)
+	myStick.SetAxisByIndex(axis_low,R_stick_y)
 	Return
 
 Label15_UP:
-	myStick.SetAxisByIndex(16384,R_stick_y)
+	myStick.SetAxisByIndex(axis_ori,R_stick_y)
 	Return
 
 ;---- R-Stick Down ---- 
 Label16:
-	myStick.SetAxisByIndex(32768,R_stick_y)
+	myStick.SetAxisByIndex(axis_over,R_stick_y)
 	Return
   
 Label16_UP:
-	myStick.SetAxisByIndex(16384,R_stick_y)
+	myStick.SetAxisByIndex(axis_ori,R_stick_y)
 	Return
   
 ;---- R-Stick left ---- 
 Label17:
-	myStick.SetAxisByIndex(0,R_stick_x)
+	myStick.SetAxisByIndex(axis_low,R_stick_x)
 	Return
 
 Label17_UP:
-	myStick.SetAxisByIndex(16384,R_stick_x)
+	myStick.SetAxisByIndex(axis_ori,R_stick_x)
 	Return
 
 ;---- R-Stick Right ---- 
 Label18:
-	myStick.SetAxisByIndex(32768,R_stick_x)
+	myStick.SetAxisByIndex(axis_over,R_stick_x)
 	Return
 
 Label18_UP:
-	myStick.SetAxisByIndex(16384,R_stick_x)
+	myStick.SetAxisByIndex(axis_ori,R_stick_x)
 	Return
   
 ;           //// OTHER BUTTONS ////  
 ;---- Start ---- 
 Label19:
-	myStick.SetBtn(1,btn_Lop)
+	myStick.SetBtn(btn_press,btn_Lop)
 	Return
 
 Label19_UP:
-	myStick.SetBtn(0,btn_Lop)
+	myStick.SetBtn(btn_free,btn_Lop)
 	Return
   
 ;---- Menu ---- 
 Label20:
-	myStick.SetBtn(1,btn_Rop)
+	myStick.SetBtn(btn_press,btn_Rop)
 	Return
 
 Label20_UP:
-	myStick.SetBtn(0,btn_Rop)
+	myStick.SetBtn(btn_free,btn_Rop)
 	Return 
 
 ;---- DPAD UP ---- 
@@ -480,7 +483,7 @@ Label21_UP:
 	Else{
 		myStick.ResetPovs()
 	}
-	; myStick.SetBtn(0,D_pad_up)
+	; myStick.SetBtn(btn_free,D_pad_up)
 	Return
   
 ;---- DPAD DOWN ---- 
@@ -499,11 +502,11 @@ Label22:
 	else {
 		myStick.SetContPov(d,POV_Index)
 	}
-	; myStick.SetBtn(1,D_pad_down)
+	; myStick.SetBtn(btn_press,D_pad_down)
 	Return
 
 Label22_UP:
-	; myStick.SetBtn(0,D_pad_down)
+	; myStick.SetBtn(btn_free,D_pad_down)
 	D_pad_down := False
 	If D_pad_left{
 		myStick.SetContPov(l,POV_Index)
@@ -521,7 +524,7 @@ Label22_UP:
 	Return  
 ;---- DPAD Left ---- 
 Label23:
-	; myStick.SetBtn(1,D_pad_left)
+	; myStick.SetBtn(btn_press,D_pad_left)
 	D_pad_left := True
 	if D_pad_up{
 		myStick.SetContPov(lu,POV_Index)
@@ -538,7 +541,7 @@ Label23:
 	Return
 
 Label23_UP:
-	; myStick.SetBtn(0,D_pad_left)
+	; myStick.SetBtn(btn_free,D_pad_left)
 	D_pad_left := False
 	if D_pad_up{
 		myStick.SetContPov(u,POV_Index)
@@ -556,7 +559,7 @@ Label23_UP:
 	Return  
 ;---- DPAD Right ---- 
 Label24:
-	; myStick.SetBtn(1,D_pad_right)
+	; myStick.SetBtn(btn_press,D_pad_right)
 	D_pad_right := True
 	if D_pad_up {
 		myStick.SetContPov(ru,POV_Index)
@@ -574,7 +577,7 @@ Label24:
 	Return
 
 Label24_UP:
-	; myStick.SetBtn(0,D_pad_right)
+	; myStick.SetBtn(btn_free,D_pad_right)
 	D_pad_right := False
 	if D_pad_up {
 		myStick.SetContPov(u,POV_Index)
@@ -593,16 +596,16 @@ Label24_UP:
 
 F6::
     ; MsgBox, Iteration number
-    myStick.SetAxisByIndex(16384,3)
-    myStick.SetAxisByIndex(16384,6)
-    myStick.SetAxisByIndex(16384,7)
-    myStick.SetAxisByIndex(16384,8)
+    myStick.SetAxisByIndex(axis_ori,3)
+    myStick.SetAxisByIndex(axis_ori,6)
+    myStick.SetAxisByIndex(axis_ori,7)
+    myStick.SetAxisByIndex(axis_ori,8)
 Return
-F7::
-    ; MsgBox, Iteration number
-    myStick.SetAxisByIndex(1384,3) ; R 的高左低右
-    myStick.SetAxisByIndex(30000,6) ; R 的上下，高上低下 
-    myStick.SetAxisByIndex(12000,7)
-    myStick.SetAxisByIndex(21000,8)
-Return
+; F7::
+;     ; MsgBox, Iteration number
+;     myStick.SetAxisByIndex(1384,3) ; R 的高左低右
+;     myStick.SetAxisByIndex(30000,6) ; R 的上下，高上低下 
+;     myStick.SetAxisByIndex(12000,7)
+;     myStick.SetAxisByIndex(21000,8)
+; Return
 ;----------------------------end macros

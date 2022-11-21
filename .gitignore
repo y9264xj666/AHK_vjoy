@@ -1,3 +1,7 @@
 B0XX.ahk
 mystick.ini
 *.exe
+build/
+*.zip
+*.7z
+*.rar
