@@ -41,6 +41,7 @@
 
 ## 说明
 1. Ctrl + Alt + R 或者 F6 键可以重置vjoy手柄为0状态
+2. 二次开发请clone本项目并安装AHK进行本地编辑编译
 
 # 相关项目
 + vjoy 驱动[njz3/vjoy](https://github.com/njz3/vJoy)
