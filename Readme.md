@@ -29,7 +29,7 @@
 - 需要安装[vjoy](https://github.com/njz3/vJoy)
   
 # 使用
-1. 去[Releases]()下载编译后的包体
+1. 去[Releases](https://github.com/y9264xj666/AHK_vjoy/releases)下载编译后的包体
 2. 解压到任意目录（最好不要有中文）
 3. 打开vjoy的“configure vjoy”，设置为24键，1pov，勾选enable feedback
    ![config](./img/vjoyconfig.png)
