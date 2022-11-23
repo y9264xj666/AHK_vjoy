@@ -1,5 +1,7 @@
 B0XX.ahk
 mystick.ini
+*PS.ini
+*Gen.ini
 *.exe
 build/
 *.zip
